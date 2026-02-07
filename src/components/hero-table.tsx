@@ -79,16 +79,19 @@ type HeroData = {
 };
 
 type HeroTableProps = {
-  initialData: { rates: HeroData[] };
+  data: { rates: HeroData[] };
   onSelectTier?: (tier: string) => void
+  onSelectMap?: (map: string) => void
 };
 
-export function HeroTable({ initialData, onSelectTier: onSelectTier }: HeroTableProps) {
+export function HeroTable({ data: data, onSelectTier: onSelectTier, onSelectMap: onSelectMap }: HeroTableProps) {
   const [selectedRole, setSelectedRole] = useState("All");
-  const [selectedTier, setSelectedTier] = useState("All");
   const handleSelectedTier = (tier: string) => {
-    setSelectedTier(tier);
     onSelectTier?.(tier);
+  }
+
+  const handleSelectedMap = (map: string) => {
+    onSelectMap?.(map);
   }
 
   return (
@@ -125,6 +128,25 @@ export function HeroTable({ initialData, onSelectTier: onSelectTier }: HeroTable
             </SelectGroup>
           </SelectContent>
         </Select>
+
+        <Select onValueChange={(value) => handleSelectedMap(value ?? "all-maps")}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a map" />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              <SelectLabel>Map</SelectLabel>
+              {MAPS.map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase())
+                  }
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </Field>
 
       <Table>
@@ -139,7 +161,7 @@ export function HeroTable({ initialData, onSelectTier: onSelectTier }: HeroTable
           </TableRow>
         </TableHeader>
         <TableBody>
-          {initialData.rates
+          {data.rates
             .filter(
               (entry) =>
                 selectedRole === "All" ||

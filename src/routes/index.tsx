@@ -1,49 +1,36 @@
 import { HeroTable } from "@/components/hero-table";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-
-type HeroData = {
-  id: string;
-  cells: {
-    name: string;
-    pickrate: number;
-    winrate: number;
-  };
-  hero: {
-    color: string;
-    name: string;
-    portrait: string;
-    role: string;
-    roleIcon: string;
-  };
-};
+import axios from "axios";
 
 export const Route = createFileRoute('/')({ 
   component: App,
   loader: async () => {
-    const res = await fetch(
-      `https://overwatch.blizzard.com/en-us/rates/data/?input=PC&map=all-maps&region=Americas&role=All&rq=1&tier=All`,
+    const res = await axios.get(
+      `/api/data?tier=All&map=all-maps`,
     );
-    return await res.json();
+    return await res.data;
   }
 })
 
 function App() {
   const initialData = Route.useLoaderData();
   const [tier, setTier] = useState("All");
+  const [map, setMap] = useState("all-maps");
   const [data, setData] = useState(initialData);
 
   useEffect(() => {
-    fetch(
-      `/data/api?tier=${tier}`
+    axios.get(
+      `/api/data?tier=${tier}&map=${map}`
     )
-    .then(res => res.json())
-    .then(setData);
-  }, [tier]);
+    .then(res => {
+      setData(res.data)
+    });
+  }, [tier, map]);
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <HeroTable initialData={data} onSelectTier={setTier} />
+      <HeroTable data={data} onSelectTier={setTier} onSelectMap={setMap} />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
-import axios from 'axios'
 
 export const Route = createFileRoute('/api/data')({
   server: {
@@ -11,14 +10,15 @@ export const Route = createFileRoute('/api/data')({
         const map = url.searchParams.get('map') || 'all-maps'
 
         const startTime = performance.now()
-        const res = await axios.get(
+        const res = await fetch(
           `https://overwatch.blizzard.com/en-us/rates/data/?input=PC&map=${map}&region=Americas&role=All&rq=2&tier=${tier}`
         )
         const endTime = performance.now()
 
         console.log(`Fetched URL: '${url.href}' in ${(endTime - startTime).toFixed(2)}ms`)
 
-        return json(res.data)
+        const data = await res.json()
+        return json(data)
       },
     },
   },

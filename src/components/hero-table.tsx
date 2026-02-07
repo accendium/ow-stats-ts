@@ -18,49 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Field } from "@/components/ui/field";
+import { MAPS, TIERS } from "@/lib/blizzard-params";
 
 const ROLES = ["All", "Tank", "Damage", "Support"];
-const TIERS = [
-  "All",
-  "Bronze",
-  "Silver",
-  "Gold",
-  "Platinum",
-  "Diamond",
-  "Master",
-  "Grandmaster",
-];
-const MAPS = [
-  "all-maps",
-  "busan",
-  "ilios",
-  "lijiang-tower",
-  "nepal",
-  "oasis",
-  "samoa",
-  "circuit-royal",
-  "dorado",
-  "havana",
-  "junkertown",
-  "rialto",
-  "route-66",
-  "shambali-monastery",
-  "watchpoint-gibraltar",
-  "aatlis",
-  "new-junk-city",
-  "suravasa",
-  "blizzard-world",
-  "eichenwalde",
-  "hollywood",
-  "kings-row",
-  "midtown",
-  "numbani",
-  "paraiso",
-  "colosseo",
-  "esperanca",
-  "new-queen-street",
-  "runasapi",
-];
 
 type HeroData = {
   id: string;

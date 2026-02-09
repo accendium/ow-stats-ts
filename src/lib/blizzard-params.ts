@@ -41,6 +41,15 @@ export const MAPS = [
   "runasapi",
 ];
 
+export const QUICKPLAY_MAPS = [
+  ...MAPS,
+  "hanamura",
+  "temple-of-anubis",
+  "volskaya-industries",
+  "hanaoka",
+  "throne-of-anubis",
+]
+
 export const REGIONS = [
   "Americas",
   "Europe",

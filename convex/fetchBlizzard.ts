@@ -1,0 +1,49 @@
+import { internalAction } from './_generated/server'
+import { internal } from './_generated/api'
+import { TIERS, MAPS, INPUTS, REGIONS } from '@/lib/blizzard-params'
+import { v } from "convex/values"
+
+export const queryAll = internalAction({
+  handler: async (ctx) => {
+    for (let index = 0; index < TIERS.length; index++) {
+      const tier = TIERS[index]
+      await ctx.scheduler.runAfter(index * 60000, internal.fetchBlizzard.queryForTier, { tier: tier })
+    }
+  },
+})
+
+export const queryForTier = internalAction({
+  args: {
+    tier: v.string(),
+  },
+  handler: async (ctx, { tier }) => {
+    let errors = 0;
+    for (const map of MAPS) {
+      for (const input of INPUTS) {
+        for (const region of REGIONS) {
+          const res = await fetch(
+            `https://overwatch.blizzard.com/en-us/rates/data/?input=${input}&map=${map}&region=${region}&role=All&rq=2&tier=${tier}`,
+          )
+
+          if (res.ok) {
+            const data = await res.json()
+            await ctx.runMutation(internal.blizzardSnapshots.createSnapshot, {
+              map: map,
+              tier: tier,
+              input: input,
+              region: region,
+              timestamp: Date.now(),
+              payload: data,
+            })
+          } else {
+            console.error(`Failed to fetch from Blizzard API: '${map}' for tier ${tier} in ${region} with input ${input}`, res.statusText)
+            errors++
+          }
+          await new Promise((resolve) => setTimeout(resolve, 100))
+        }
+      }
+    }
+    let total = MAPS.length * INPUTS.length * REGIONS.length;
+    console.log(`Completed ${total - errors}/${total} requests for tier ${tier} (${errors} errors)`)
+  },
+})

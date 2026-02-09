@@ -40,3 +40,14 @@ export const MAPS = [
   "new-queen-street",
   "runasapi",
 ];
+
+export const REGIONS = [
+  "Americas",
+  "Europe",
+  "Asia",
+]
+
+export const INPUTS = [
+  "PC",
+  "Console",
+]

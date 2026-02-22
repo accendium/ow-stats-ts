@@ -1,3 +1,5 @@
+export const ROLES = ['All', 'Tank', 'Damage', 'Support']
+
 export const TIERS = [
   "All",
   "Bronze",

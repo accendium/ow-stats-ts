@@ -1,13 +1,3 @@
-import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -16,99 +6,33 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Field } from "@/components/ui/field";
-import { MAPS, TIERS } from "@/lib/blizzard-params";
-
-const ROLES = ["All", "Tank", "Damage", "Support"];
-
-type HeroData = {
-  id: string;
-  cells: {
-    name: string;
-    pickrate: number;
-    winrate: number;
-  };
-  hero: {
-    color: string;
-    name: string;
-    portrait: string;
-    role: string;
-    roleIcon: string;
-  };
-};
+} from '@/components/ui/table'
+import type { HeroData } from '@/lib/hero-data'
 
 type HeroTableProps = {
-  data: { rates: HeroData[] };
-  onSelectTier?: (tier: string) => void
-  onSelectMap?: (map: string) => void
-};
+  data: { rates: HeroData[] }
+  selectedRole?: string
+}
 
-export function HeroTable({ data: data, onSelectTier: onSelectTier, onSelectMap: onSelectMap }: HeroTableProps) {
-  const [selectedRole, setSelectedRole] = useState("All");
-  const handleSelectedTier = (tier: string) => {
-    onSelectTier?.(tier);
-  }
+export function HeroTable({ data, selectedRole = 'All' }: HeroTableProps) {
+  const renderRateBar = (rate: number, style: string) => {
+    const clampedRate = Math.max(0, Math.min(100, rate))
 
-  const handleSelectedMap = (map: string) => {
-    onSelectMap?.(map);
+    return (
+      <div className="relative h-6 w-full overflow-hidden rounded-sm border border-border">
+        <div
+          className={`h-full ${style}`}
+          style={{ width: `${clampedRate}%` }}
+        />
+        <span className="absolute inset-0 flex items-center px-2 text-sm drop-shadow-[0_1px_1px_rgba(0,0,0,0.5),0_1px_1px_rgba(0,0,0,1)] font-extrabold">
+          {rate.toFixed(0)}%
+        </span>
+      </div>
+    )
   }
 
   return (
     <>
-      <Field orientation="horizontal">
-        <Select onValueChange={(value) => setSelectedRole(value ?? "All")}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a role" />
-          </SelectTrigger>
-          <SelectContent position="popper">
-            <SelectGroup>
-              <SelectLabel>Role</SelectLabel>
-              {ROLES.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-
-        <Select onValueChange={(value) => handleSelectedTier(value ?? "All")}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a tier" />
-          </SelectTrigger>
-          <SelectContent position="popper">
-            <SelectGroup>
-              <SelectLabel>Tier</SelectLabel>
-              {TIERS.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-
-        <Select onValueChange={(value) => handleSelectedMap(value ?? "all-maps")}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a map" />
-          </SelectTrigger>
-          <SelectContent position="popper">
-            <SelectGroup>
-              <SelectLabel>Map</SelectLabel>
-              {MAPS.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item
-                    .replace(/-/g, " ")
-                    .replace(/\b\w/g, (c) => c.toUpperCase())
-                  }
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </Field>
-
       <Table>
         <TableCaption>
           Sourced from Blizzard's API. Hero data is updated every patch.
@@ -124,18 +48,22 @@ export function HeroTable({ data: data, onSelectTier: onSelectTier, onSelectMap:
           {data.rates
             .filter(
               (entry) =>
-                selectedRole === "All" ||
+                selectedRole === 'All' ||
                 entry.hero.role === selectedRole.toUpperCase(),
             )
             .map((hero: HeroData) => (
               <TableRow key={hero.id}>
                 <TableCell>{hero.cells.name}</TableCell>
-                <TableCell>{hero.cells.pickrate / 2}%</TableCell>
-                <TableCell>{hero.cells.winrate}%</TableCell>
+                <TableCell>
+                  {renderRateBar(hero.cells.pickrate, 'bg-chart-3')}
+                </TableCell>
+                <TableCell>
+                  {renderRateBar(hero.cells.winrate, 'bg-chart-1')}
+                </TableCell>
               </TableRow>
             ))}
         </TableBody>
       </Table>
     </>
-  );
+  )
 }

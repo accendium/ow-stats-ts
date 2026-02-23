@@ -17,6 +17,8 @@ import {
   OWRole,
   OWRegion,
   REGIONS,
+  OWInput,
+  INPUTS,
 } from '@/lib/overwatch-constants'
 
 type HeroQueryFieldsProps = {
@@ -24,10 +26,12 @@ type HeroQueryFieldsProps = {
   tier: OWTier
   map: OWMap
   region: OWRegion
+  input: OWInput
   onSelectRole?: (role: OWRole) => void
   onSelectTier?: (tier: OWTier) => void
   onSelectMap?: (map: OWMap) => void
   onSelectRegion?: (region: OWRegion) => void
+  onSelectInput?: (input: OWInput) => void
 }
 
 export function HeroQueryFields({
@@ -35,10 +39,12 @@ export function HeroQueryFields({
   tier,
   map,
   region,
+  input,
   onSelectRole,
   onSelectTier,
   onSelectMap,
   onSelectRegion,
+  onSelectInput,
 }: HeroQueryFieldsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-5">
@@ -120,6 +126,27 @@ export function HeroQueryFields({
             <SelectGroup>
               <SelectLabel>Region</SelectLabel>
               {REGIONS.map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field>
+        <FieldLabel>Input</FieldLabel>
+        <Select
+          value={input}
+          onValueChange={(value) => onSelectInput?.(value as OWInput)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue>{input}</SelectValue>
+          </SelectTrigger>
+          <SelectContent position="popper">
+            <SelectGroup>
+              <SelectLabel>Input</SelectLabel>
+              {INPUTS.map((item) => (
                 <SelectItem key={item} value={item}>
                   {item}
                 </SelectItem>

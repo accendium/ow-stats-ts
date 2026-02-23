@@ -19,6 +19,8 @@ import {
   DEFAULT_MAP,
   OWMap,
   OWRegion,
+  OWInput,
+  DEFAULT_INPUT,
 } from '@/lib/overwatch-constants'
 
 export const Route = createFileRoute('/')({
@@ -30,27 +32,31 @@ function App() {
   const [tier, setTier] = useState<OWTier>(DEFAULT_TIER)
   const [map, setMap] = useState<OWMap>(DEFAULT_MAP)
   const [region, setRegion] = useState<OWRegion>(DEFAULT_REGION)
+  const [input, setInput] = useState<OWInput>(DEFAULT_INPUT)
   const [data, setData] = useState<{ rates: [] } | null>(null)  
 
   useEffect(() => {
-    fetch(`/api/data?tier=${tier}&map=${map}&region=${region}`)
+    fetch(`/api/data?tier=${tier}&map=${map}&region=${region}&input=${input}`)
       .then((res) => res.json())
       .then(setData)
-  }, [tier, map, region])
+  }, [tier, map, region, input])
 
   return (
     <div className="container mx-auto flex flex-col gap-6 px-4 py-12">
       <Card>
         <CardHeader>
           <CardTitle>Query Options</CardTitle>
+          <CardDescription>Adjust the query options to get the data you need.</CardDescription>
         </CardHeader>
         <CardContent>
           <HeroQueryFields
             role={role}
+            input={input}
             tier={tier}
             map={map}
             region={region}
             onSelectRole={setRole}
+            onSelectInput={setInput}
             onSelectTier={setTier}
             onSelectMap={setMap}
             onSelectRegion={setRegion}
@@ -73,6 +79,7 @@ function App() {
           <Card>
             <CardHeader>
               <CardTitle>Hero Stats</CardTitle>
+              <CardDescription>View detailed stats for each hero in your selected role.</CardDescription>
             </CardHeader>
             <CardContent>
               <HeroTable data={data} selectedRole={role} />

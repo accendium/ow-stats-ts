@@ -8,7 +8,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { ROLES } from "@/lib/blizzard-params"
+import { ROLES } from "@/lib/overwatch-constants"
 import type { HeroData } from "@/lib/hero-data"
 
 const chartConfig = {

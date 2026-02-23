@@ -1,25 +1,42 @@
-import { HeroTable } from "@/components/hero-table";
-import { HeroQueryFields } from "@/components/hero-query-fields";
-import { HeroRatesScatterplot } from "@/components/hero-rates-scatterplot";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { HeroTable } from '@/components/hero-table'
+import { HeroQueryFields } from '@/components/hero-query-fields'
+import { HeroRatesScatterplot } from '@/components/hero-rates-scatterplot'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { createFileRoute } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
+import {
+  OWRole,
+  DEFAULT_ROLE,
+  DEFAULT_TIER,
+  DEFAULT_REGION,
+  OWTier,
+  DEFAULT_MAP,
+  OWMap,
+  OWRegion,
+} from '@/lib/overwatch-constants'
 
 export const Route = createFileRoute('/')({
   component: App,
 })
 
 function App() {
-  const [role, setRole] = useState("All");
-  const [tier, setTier] = useState("All");
-  const [map, setMap] = useState("all-maps");
-  const [data, setData] = useState<{ rates: [] } | null>(null);
+  const [role, setRole] = useState<OWRole>(DEFAULT_ROLE)
+  const [tier, setTier] = useState<OWTier>(DEFAULT_TIER)
+  const [map, setMap] = useState<OWMap>(DEFAULT_MAP)
+  const [region, setRegion] = useState<OWRegion>(DEFAULT_REGION)
+  const [data, setData] = useState<{ rates: [] } | null>(null)  
 
   useEffect(() => {
-    fetch(`/api/data?tier=${tier}&map=${map}`)
+    fetch(`/api/data?tier=${tier}&map=${map}&region=${region}`)
       .then((res) => res.json())
-      .then(setData);
-  }, [tier, map]);
+      .then(setData)
+  }, [tier, map, region])
 
   return (
     <div className="container mx-auto flex flex-col gap-6 px-4 py-12">
@@ -28,7 +45,16 @@ function App() {
           <CardTitle>Query Options</CardTitle>
         </CardHeader>
         <CardContent>
-          <HeroQueryFields onSelectRole={setRole} onSelectTier={setTier} onSelectMap={setMap} />
+          <HeroQueryFields
+            role={role}
+            tier={tier}
+            map={map}
+            region={region}
+            onSelectRole={setRole}
+            onSelectTier={setTier}
+            onSelectMap={setMap}
+            onSelectRegion={setRegion}
+          />
         </CardContent>
       </Card>
       {data && (
@@ -36,7 +62,9 @@ function App() {
           <Card>
             <CardHeader>
               <CardTitle>Viability Matrix</CardTitle>
-              <CardDescription>Easily visualize the viability of heroes in your selected role.</CardDescription>
+              <CardDescription>
+                Easily visualize the viability of heroes in your selected role.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <HeroRatesScatterplot data={data.rates} selectedRole={role} />
@@ -53,5 +81,5 @@ function App() {
         </>
       )}
     </div>
-  );
+  )
 }

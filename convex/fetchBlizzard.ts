@@ -1,6 +1,6 @@
 import { internalAction } from './_generated/server'
 import { internal } from './_generated/api'
-import { TIERS, MAPS, INPUTS, REGIONS, QUICKPLAY_MAPS } from '@/lib/blizzard-params'
+import { TIERS, MAPS, INPUTS, REGIONS, QUICKPLAY_MAPS } from '@/lib/overwatch-constants'
 import { v } from "convex/values"
 
 export const queryAll = internalAction({

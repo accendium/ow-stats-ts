@@ -51,11 +51,6 @@ export const DEFAULT_MAP: OWMap = "all-maps"
 
 export const QUICKPLAY_MAPS = [
   ...MAPS,
-  'hanamura',
-  'temple-of-anubis',
-  'volskaya-industries',
-  'hanaoka',
-  'throne-of-anubis',
 ] as const
 export type OWQuickplayMap = (typeof QUICKPLAY_MAPS)[number]
 export const DEFAULT_QUICKPLAY_MAP: OWQuickplayMap = DEFAULT_MAP

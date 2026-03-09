@@ -26,6 +26,7 @@ Install dependencies and start the dev server:
 
 ```bash
 npm install
+npx convex dev
 npm run dev
 ```
 

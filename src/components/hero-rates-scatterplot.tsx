@@ -8,7 +8,7 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { ROLES } from "@/lib/overwatch-constants"
+import { ROLES, type OWRole } from "@/lib/overwatch-constants"
 import type { HeroData } from "@/lib/hero-data"
 
 const chartConfig = {
@@ -29,7 +29,7 @@ export function HeroRatesScatterplot({
   selectedRole = "All",
 }: {
   data: HeroData[]
-  selectedRole?: string
+  selectedRole?: OWRole
 }) {
   const NICE_STEPS = [1, 2, 5, 10, 20, 25, 50]
 

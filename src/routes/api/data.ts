@@ -8,10 +8,12 @@ export const Route = createFileRoute('/api/data')({
         const url = new URL(request.url)
         const tier = url.searchParams.get('tier') || 'All'
         const map = url.searchParams.get('map') || 'all-maps'
+        const region = url.searchParams.get('region') || 'Americas'
+        const input = url.searchParams.get('input') || 'PC'
 
         const startTime = performance.now()
         const res = await fetch(
-          `https://overwatch.blizzard.com/en-us/rates/data/?input=PC&map=${map}&region=Americas&role=All&rq=2&tier=${tier}`
+          `https://overwatch.blizzard.com/en-us/rates/data/?input=${input}&map=${map}&region=${region}&role=All&rq=2&tier=${tier}`
         )
         const endTime = performance.now()
 

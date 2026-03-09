@@ -1,301 +1,124 @@
-Welcome to your new TanStack app! 
+# ow-stats-ts
 
-# Getting Started
+`ow-stats-ts` is an Overwatch hero stats viewer built with TanStack Start, React, and Convex.
 
-To run this application:
+The app lets you filter hero data by `role`, `tier`, `map`, `region`, and `input`, then view the results as:
+
+- a scatterplot of pick rate vs. win rate
+- a sortable hero stats table
+
+The UI fetches live data through this app's server route, while the repo also contains a separate Convex snapshot pipeline for caching Blizzard responses on a schedule.
+
+## Stack
+
+- React 19 + TypeScript
+- TanStack Start + TanStack Router
+- Vite
+- Tailwind CSS v4
+- Radix UI primitives
+- Recharts
+- TanStack Table
+- Convex
+
+## Development
+
+Install dependencies and start the dev server:
 
 ```bash
 npm install
 npm run dev
 ```
 
-# Building For Production
+The Vite dev server runs on port `3000`.
 
-To build this application for production:
+Other useful scripts:
 
 ```bash
 npm run build
-```
-
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
-```bash
+npm run preview
 npm run test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
-
-```bash
 npm run lint
 npm run format
 npm run check
 ```
 
+## Environment
 
-
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
+The router initializes a Convex client, so local development expects:
 
 ```bash
-npm install @tanstack/react-query @tanstack/react-query-devtools
+CONVEX_DEPLOYMENT=...
+VITE_CONVEX_URL=...
+VITE_CONVEX_SITE_URL=...
 ```
 
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
+The Convex cron pipeline also checks:
 
 ```bash
-npm install @tanstack/store
+DISABLE_CRON=true
 ```
 
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+Set `DISABLE_CRON=true` when you want Convex functions available locally without running the scheduled Blizzard ingestion flow.
 
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
+## How Data Flows
 
-const countStore = new Store(0);
+There are two distinct data paths in this repo.
 
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
+### 1. Live app requests
 
-export default App;
+This is the path the visible UI uses today.
+
+1. The browser renders `/` from `src/routes/index.tsx`.
+2. A client-side `useEffect` watches the selected filters.
+3. The browser requests `/api/data?...` from `src/routes/api/data.ts`.
+4. That server route fetches data from Blizzard's public rates endpoint.
+5. The server returns JSON to the browser.
+6. The browser renders the scatterplot and table.
+
+SSR vs client execution:
+
+- `src/routes/index.tsx` runs in the browser for the live fetch because the request is triggered inside `useEffect`.
+- `src/routes/api/data.ts` runs on the server.
+- That means the browser does not call Blizzard directly from the page component; it calls this app's server route first.
+
+### 2. Convex snapshot pipeline
+
+The repo also includes a background snapshot path:
+
+1. `convex/crons.ts` schedules a weekly job.
+2. `convex/fetchBlizzard.ts` iterates tiers, maps, inputs, and regions.
+3. Each request fetches Blizzard data and stores a snapshot.
+4. `convex/blizzardSnapshots.ts` writes the payload into the `blizzardSnapshots` table defined in `convex/schema.ts`.
+
+At the moment, the visible UI uses the live `/api/data` path rather than reading from Convex snapshots. This is a temporary feature to ensure that the database pipeline is functional before it is implemented.
+
+## Project Layout
+
+```text
+src/
+  components/
+    hero-query-fields.tsx      Filter controls
+    hero-rates-scatterplot.tsx Pick rate vs. win rate chart
+    hero-table.tsx             Sortable hero stats table
+  lib/
+    overwatch-constants.ts     Roles, tiers, maps, regions, inputs
+  routes/
+    index.tsx                  Main page
+    api/data.ts                Server route that proxies Blizzard data
+  router.tsx                   Router, React Query, and Convex wiring
+
+convex/
+  schema.ts                    Convex schema
+  blizzardSnapshots.ts         Snapshot write mutation
+  fetchBlizzard.ts             Blizzard ingestion actions
+  crons.ts                     Weekly schedule
 ```
 
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+## Notes For Contributors
 
-Let's check this out by doubling the count using derived state.
+- `src/routes/index.tsx` is the fastest place to start if you want to understand the user-facing app.
+- `src/lib/overwatch-constants.ts` is the source of truth for query/filter options.
+- `src/routeTree.gen.ts` is generated code.
+- `example-blizz-api-res.json` shows the shape of Blizzard's response payload.
+- Vitest is configured, but there are currently no test files in the repo.
 
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).

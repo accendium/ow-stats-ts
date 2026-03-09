@@ -1,0 +1,83 @@
+{
+    "rates": [
+        {
+            "id": "ana",
+            "cells": {
+                "name": "Ana",
+                "pickrate": 22.3,
+                "winrate": 46.9
+            },
+            "hero": {
+                "color": "48699eff",
+                "name": "Ana",
+                "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/985b06beae46b7ba3ca87d1512d0fc62ca7f206ceca58ef16fc44d43a1cc84ed.png",
+                "role": "SUPPORT",
+                "roleIcon": "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/blt8cf279e9b3126ef8/dark_circle_support.svg"
+            }
+        },
+        {
+            "id": "anran",
+            "cells": {
+                "name": "Anran",
+                "pickrate": 16.1,
+                "winrate": 50.5
+            },
+            "hero": {
+                "color": "e81a05ff",
+                "name": "Anran",
+                "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/2cdf460c6080a031258e513713d1d635a8e68799cb5d7e27774be8963e95f6a3.png",
+                "role": "DAMAGE",
+                "roleIcon": "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/blt052e8b02aef879b0/dark_circle_damage.svg"
+            }
+        },
+        {
+            "id": "ashe",
+            "cells": {
+                "name": "Ashe",
+                "pickrate": 12.1,
+                "winrate": 51.1
+            },
+            "hero": {
+                "color": "3e3c3aff",
+                "name": "Ashe",
+                "portrait": "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4076bbaa2eb52a0bfe612434071e56e7702d5454473dbbea2f9e392a9d997a94.png",
+                "role": "DAMAGE",
+                "roleIcon": "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/blt052e8b02aef879b0/dark_circle_damage.svg"
+            }
+        }
+    ],
+    "extrema": {
+        "all": {
+            "maxwr": 55.6,
+            "minwr": 43.9,
+            "maxpr": 30.3,
+            "minpr": 1.9
+        },
+        "tank": {
+            "maxwr": 54,
+            "minwr": 43.9,
+            "maxpr": 12.3,
+            "minpr": 1.9
+        },
+        "damage": {
+            "maxwr": 55.6,
+            "minwr": 45.6,
+            "maxpr": 19,
+            "minpr": 3.2
+        },
+        "support": {
+            "maxwr": 54.2,
+            "minwr": 45.1,
+            "maxpr": 30.3,
+            "minpr": 3.8
+        }
+    },
+    "selected": {
+        "input": "PC",
+        "map": "all-maps",
+        "region": "Americas",
+        "role": "All",
+        "rq": "2",
+        "tier": "All"
+    }
+}

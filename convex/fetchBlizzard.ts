@@ -1,10 +1,14 @@
 import { internalAction } from './_generated/server'
 import { internal } from './_generated/api'
-import { TIERS, MAPS, INPUTS, REGIONS, QUICKPLAY_MAPS } from '@/lib/blizzard-params'
+import { TIERS, MAPS, INPUTS, REGIONS, QUICKPLAY_MAPS } from '@/lib/overwatch-constants'
 import { v } from "convex/values"
 
 export const queryAll = internalAction({
   handler: async (ctx) => {
+    if (process.env.DISABLE_CRON === "true") {
+      console.log("Cron disabled, skipping internal.fetchBlizzard.queryAll")
+      return
+    }
     for (let index = 0; index < TIERS.length; index++) {
       const tier = TIERS[index]
       await ctx.scheduler.runAfter(index * 60000, internal.fetchBlizzard.queryForTier, { tier: tier })
@@ -18,6 +22,10 @@ export const queryForTier = internalAction({
     tier: v.string(),
   },
   handler: async (ctx, { tier }) => {
+    if (process.env.DISABLE_CRON === "true") {
+      console.log("Cron disabled, skipping internal.fetchBlizzard.queryForTier")
+      return
+    }
     let errors = 0;
     for (const map of MAPS) {
       for (const input of INPUTS) {
@@ -51,6 +59,10 @@ export const queryForTier = internalAction({
 
 export const queryQuickplay = internalAction({
   handler: async (ctx) => {
+    if (process.env.DISABLE_CRON === "true") {
+      console.log("Cron disabled, skipping internal.fetchBlizzard.queryQuickplay")
+      return
+    }
     let errors = 0;
     for (const map of QUICKPLAY_MAPS) {
       for (const input of INPUTS) {

@@ -13,7 +13,7 @@ export const Route = createFileRoute('/api/data')({
 
         const startTime = performance.now()
         const res = await fetch(
-          `https://overwatch.blizzard.com/en-us/rates/data/?input=${input}&map=${map}&region=${region}&role=All&rq=2&tier=${tier}`
+          `https://overwatch.blizzard.com/en-us/rates/data/?input=${input}&map=${map}&region=${region}&role=All&rq=1&tier=${tier}`
         )
         const endTime = performance.now()
 

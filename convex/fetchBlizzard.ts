@@ -31,7 +31,7 @@ export const queryForTier = internalAction({
       for (const input of INPUTS) {
         for (const region of REGIONS) {
           const res = await fetch(
-            `https://overwatch.blizzard.com/en-us/rates/data/?input=${input}&map=${map}&region=${region}&role=All&rq=2&tier=${tier}`,
+            `https://overwatch.blizzard.com/en-us/rates/data/?input=${input}&map=${map}&region=${region}&role=All&rq=1&tier=${tier}`,
           )
 
           if (res.ok) {

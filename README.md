@@ -165,11 +165,20 @@ convex/
   crons.ts                     Weekly schedule
 ```
 
+## Roadmap Ideas
+
+Ban rate data (`cells.banrate`) has been available in the competitive role queue payload since the 2026-07 API change and is not surfaced in the UI yet:
+
+- **Ban rate vs. win rate matrix** — a second viability scatterplot with ban rate on the y-axis and win rate on the x-axis, revealing which strong heroes the community actually bans.
+- **Pick rate vs. ban rate matrix** — a scatterplot pairing pick rate and ban rate to separate "banned because oppressive" heroes from "banned but rarely played" ones.
+- **Ban rate column in Hero Stats** — a third rate bar in the table alongside pick rate and win rate, using red (`bg-destructive` or a red chart token) for the bar color.
+- **Tabs on the graph components** — let each graph card switch between the plot matrix and a second visualization medium. Suggested medium: **historic trend lines** — the Convex snapshot pipeline already caches weekly payloads, so each tab could render a per-hero line chart of pick/win/ban rate over time and turn the stored history into something visible. (A simpler alternative: a ranked horizontal bar chart of the selected stat.)
+
 ## Notes For Contributors
 
 - `src/routes/index.tsx` is the fastest place to start if you want to understand the user-facing app.
 - `src/lib/overwatch-constants.ts` is the source of truth for query/filter options.
 - `src/routeTree.gen.ts` is generated code.
-- `example-blizz-api-res.json` shows the shape of Blizzard's response payload.
-- Vitest is configured, but there are currently no test files in the repo.
+- `example-blizz-api-res.json` shows the shape of Blizzard's response payload (legacy flat envelope).
+- Vitest is configured; tests live next to their subject (e.g. `src/lib/rq-monitor.test.ts`).
 

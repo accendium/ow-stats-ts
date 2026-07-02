@@ -174,6 +174,8 @@ Ban rate data (`cells.banrate`) has been available in the competitive role queue
 - **Ban rate column in Hero Stats** — a third rate bar in the table alongside pick rate and win rate, using red (`bg-destructive` or a red chart token) for the bar color.
 - **Tabs on the graph components** — let each graph card switch between the plot matrix and a second visualization medium. Suggested medium: **historic trend lines** — the Convex snapshot pipeline already caches weekly payloads, so each tab could render a per-hero line chart of pick/win/ban rate over time and turn the stored history into something visible. (A simpler alternative: a ranked horizontal bar chart of the selected stat.)
 
+Note: ban rates are all zero outside competitive role queue (`rq=1`), so hide ban-rate views for quickplay data.
+
 ## Notes For Contributors
 
 - `src/routes/index.tsx` is the fastest place to start if you want to understand the user-facing app.

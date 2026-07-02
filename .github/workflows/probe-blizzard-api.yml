@@ -5,8 +5,6 @@ name: Probe Blizzard rates API shape
 # logs (the API is not reachable from every development environment).
 on:
   workflow_dispatch:
-  push:
-    branches: [claude/app-crash-mount-undefined-1pkumr]
 
 jobs:
   probe:

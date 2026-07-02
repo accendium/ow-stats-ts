@@ -5,6 +5,7 @@ import {
   evaluateRqHealth,
   formatRqHealthReport,
   isValidRatesPayload,
+  normalizeRatesPayload,
   ratesFingerprint,
 } from './rq-monitor'
 import type { RatesPayload } from './rq-monitor'
@@ -48,6 +49,45 @@ describe('isValidRatesPayload', () => {
   })
 })
 
+// The envelope shipped by the API since 2026-07: the legacy payload moved
+// under a top-level `rates` key, next to a new `columns` array, and cells
+// gained `banrate`.
+function wrapInCurrentEnvelope(payload: RatesPayload) {
+  return {
+    rates: {
+      ...payload,
+      rates: payload.rates.map((entry) => ({
+        ...entry,
+        cells: { ...entry.cells, banrate: 0 },
+      })),
+    },
+    columns: [
+      { id: 'name', text: 'Name', sortable: true, sortDirection: 'asc' },
+      { id: 'winrate', text: 'Win rate', sortable: true, sortDirection: 'desc' },
+    ],
+  }
+}
+
+describe('normalizeRatesPayload', () => {
+  it('passes the legacy flat payload through unchanged', () => {
+    expect(normalizeRatesPayload(baseline)).toBe(baseline)
+  })
+
+  it('unwraps the 2026-07 envelope (rates nested under rates)', () => {
+    const normalized = normalizeRatesPayload(wrapInCurrentEnvelope(baseline))
+    expect(normalized).not.toBeNull()
+    expect(Array.isArray(normalized!.rates)).toBe(true)
+    expect(normalized!.rates[0].id).toBe(baseline.rates[0].id)
+    expect(normalized!.rates[0].cells.banrate).toBe(0)
+  })
+
+  it('returns null for unusable payloads', () => {
+    expect(normalizeRatesPayload({ selected: { rq: '1' } })).toBeNull()
+    expect(normalizeRatesPayload({ rates: { columns: [] } })).toBeNull()
+    expect(normalizeRatesPayload(null)).toBeNull()
+  })
+})
+
 describe('ratesFingerprint', () => {
   it('is order-independent', () => {
     const reversed = { ...baseline, rates: [...baseline.rates].reverse() }
@@ -78,6 +118,26 @@ describe('evaluateRqHealth', () => {
     expect(report.healthy).toBe(true)
     expect(report.baselineInvalid).toBe(false)
     expect(report.checks.every((check) => check.result === 'changed')).toBe(true)
+  })
+
+  it('evaluates health across enveloped payloads (current API shape)', () => {
+    const report = evaluateRqHealth(wrapInCurrentEnvelope(baseline), [
+      {
+        parameter: 'map',
+        label: 'all-maps vs rialto',
+        payload: wrapInCurrentEnvelope(cloneWithShiftedRates(baseline)),
+      },
+      {
+        parameter: 'tier',
+        label: 'All vs Grandmaster',
+        payload: wrapInCurrentEnvelope(baseline),
+      },
+    ])
+    expect(report.baselineInvalid).toBe(false)
+    expect(report.checks.map((check) => check.result)).toEqual([
+      'changed',
+      'stale',
+    ])
   })
 
   it('flags a broken rq when rialto returns data identical to all-maps', () => {

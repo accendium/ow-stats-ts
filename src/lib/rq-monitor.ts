@@ -20,11 +20,30 @@ export type HeroRate = {
     name: string
     pickrate: number
     winrate: number
+    /** Present since the 2026-07 API change (competitive role queue only) */
+    banrate?: number
   }
 }
 
 export type RatesPayload = {
   rates: Array<HeroRate>
+}
+
+/**
+ * Accept both known envelopes of the Blizzard rates endpoint and return
+ * the flat payload the app is built around, or null when neither matches:
+ *
+ * - legacy (pre 2026-07): `{ rates: [...], extrema, selected }`
+ * - current: `{ rates: { rates: [...], extrema, selected }, columns: [...] }`
+ *   (the legacy payload moved under a top-level `rates` key)
+ */
+export function normalizeRatesPayload(value: unknown): RatesPayload | null {
+  if (isValidRatesPayload(value)) return value
+  if (typeof value === 'object' && value !== null) {
+    const inner = (value as { rates?: unknown }).rates
+    if (isValidRatesPayload(inner)) return inner
+  }
+  return null
 }
 
 /**
@@ -76,7 +95,13 @@ export function describePayload(value: unknown): string {
   if (rates === undefined) {
     return `an object without a rates key (keys: ${keys.join(', ') || 'none'})`
   }
-  if (!Array.isArray(rates)) return `an object whose rates is a ${typeof rates}`
+  if (!Array.isArray(rates)) {
+    if (typeof rates === 'object' && rates !== null) {
+      const innerKeys = Object.keys(rates)
+      return `an object whose rates is an object without a usable inner rates array (inner keys: ${innerKeys.join(', ') || 'none'})`
+    }
+    return `an object whose rates is a ${typeof rates}`
+  }
   const firstInvalid = rates.findIndex(
     (entry) =>
       typeof entry !== 'object' ||
@@ -124,7 +149,8 @@ export function evaluateRqHealth(
   baseline: unknown,
   variations: Array<ParameterVariation>,
 ): RqHealthReport {
-  if (!isValidRatesPayload(baseline)) {
+  const normalizedBaseline = normalizeRatesPayload(baseline)
+  if (normalizedBaseline === null) {
     return {
       healthy: false,
       baselineInvalid: true,
@@ -136,12 +162,13 @@ export function evaluateRqHealth(
     }
   }
 
-  const baselineFingerprint = ratesFingerprint(baseline)
+  const baselineFingerprint = ratesFingerprint(normalizedBaseline)
   const checks = variations.map(({ parameter, label, payload }): ParameterCheck => {
-    if (!isValidRatesPayload(payload)) {
+    const normalized = normalizeRatesPayload(payload)
+    if (normalized === null) {
       return { parameter, label, result: 'invalid' }
     }
-    const identical = ratesFingerprint(payload) === baselineFingerprint
+    const identical = ratesFingerprint(normalized) === baselineFingerprint
     return { parameter, label, result: identical ? 'stale' : 'changed' }
   })
 

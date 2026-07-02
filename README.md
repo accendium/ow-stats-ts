@@ -94,7 +94,9 @@ Use `/owstats status` in Discord to get the latest rq monitor result on demand.
 
 ### rq monitor
 
-Blizzard's `rq` query parameter is fragile: it has flipped between `1` and `2` for competitive role queue. When it flips, the API keeps returning well-shaped 200 responses but silently ignores query parameters — the observable symptom is stale data, e.g. `map=rialto` returning data identical to `map=all-maps`.
+Blizzard's `rq` query parameter is fragile: it has flipped between `1` and `2` for competitive role queue. When it flips, the API keeps returning well-shaped 200 responses but silently ignores query parameters — the observable symptom is stale data, e.g. `map=rialto` returning data identical to `map=all-maps`. As of 2026-07, `rq=1` is the live competitive dataset (probed live via the `Probe Blizzard rates API shape` GitHub Actions workflow, which can be dispatched manually whenever the shape needs inspecting).
+
+The response envelope also changed in 2026-07: the legacy payload (`{ rates: [...], extrema, selected }`) moved under a top-level `rates` key next to a new `columns` array, and hero cells gained `banrate`. `normalizeRatesPayload` in `src/lib/rq-monitor.ts` accepts both envelopes and is applied at every ingestion point (`/api/data`, the Convex monitor, and the snapshot pipeline), so the rest of the app only ever sees the flat shape.
 
 An hourly Convex cron (`convex/monitor.ts`) probes one variation per query parameter against a baseline query (`all-maps` / `All` / `Americas` / `PC`):
 

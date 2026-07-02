@@ -17,8 +17,11 @@ import { evaluateRqHealth, formatRqHealthReport } from '@/lib/rq-monitor'
  * is normal.
  */
 
-const RQ_IN_USE = '2'
-const RQ_ALTERNATIVE = '1'
+// As of the 2026-07 API change, rq=1 is the live competitive role queue
+// dataset; rq=2 serves stale data that ignores query parameters. These
+// swap when Blizzard flips rq again — the alert says which value works.
+const RQ_IN_USE = '1'
+const RQ_ALTERNATIVE = '2'
 
 const BASELINE = {
   input: 'PC',

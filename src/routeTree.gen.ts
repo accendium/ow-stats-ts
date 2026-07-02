@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiDataRouteImport } from './routes/api/data'
+import { Route as ApiClientErrorRouteImport } from './routes/api/client-error'
+import { Route as ApiWebhooksDiscordRouteImport } from './routes/api/webhooks/discord'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +24,54 @@ const ApiDataRoute = ApiDataRouteImport.update({
   path: '/api/data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClientErrorRoute = ApiClientErrorRouteImport.update({
+  id: '/api/client-error',
+  path: '/api/client-error',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksDiscordRoute = ApiWebhooksDiscordRouteImport.update({
+  id: '/api/webhooks/discord',
+  path: '/api/webhooks/discord',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/data': typeof ApiDataRoute
+  '/api/webhooks/discord': typeof ApiWebhooksDiscordRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/data': typeof ApiDataRoute
+  '/api/webhooks/discord': typeof ApiWebhooksDiscordRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/client-error': typeof ApiClientErrorRoute
   '/api/data': typeof ApiDataRoute
+  '/api/webhooks/discord': typeof ApiWebhooksDiscordRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/data'
+  fullPaths: '/' | '/api/client-error' | '/api/data' | '/api/webhooks/discord'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/data'
-  id: '__root__' | '/' | '/api/data'
+  to: '/' | '/api/client-error' | '/api/data' | '/api/webhooks/discord'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/client-error'
+    | '/api/data'
+    | '/api/webhooks/discord'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiClientErrorRoute: typeof ApiClientErrorRoute
   ApiDataRoute: typeof ApiDataRoute
+  ApiWebhooksDiscordRoute: typeof ApiWebhooksDiscordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +90,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDataRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/client-error': {
+      id: '/api/client-error'
+      path: '/api/client-error'
+      fullPath: '/api/client-error'
+      preLoaderRoute: typeof ApiClientErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/discord': {
+      id: '/api/webhooks/discord'
+      path: '/api/webhooks/discord'
+      fullPath: '/api/webhooks/discord'
+      preLoaderRoute: typeof ApiWebhooksDiscordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiClientErrorRoute: ApiClientErrorRoute,
   ApiDataRoute: ApiDataRoute,
+  ApiWebhooksDiscordRoute: ApiWebhooksDiscordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

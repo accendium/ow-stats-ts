@@ -14,3 +14,4 @@ todos.json
 .cursor
 
 convex/_generated/
+.vercel

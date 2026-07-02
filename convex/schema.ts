@@ -43,6 +43,11 @@ const blizzardRatesPayloadValidator = v.object({
 });
 
 export default defineSchema({
+  monitorStatus: defineTable({
+    checkedAt: v.number(),
+    healthy: v.boolean(),
+    summary: v.string(),
+  }),
   blizzardSnapshots: defineTable({
     tier: v.string(),
     map: v.string(),

@@ -14,6 +14,14 @@ const config = defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      // Optional native websocket accelerators probed at runtime by
+      // @discordjs/ws (via the Chat SDK Discord adapter). They are not
+      // installed; the probing import is wrapped in try/catch upstream.
+      external: ['zlib-sync', 'bufferutil', 'utf-8-validate'],
+    },
+  },
   plugins: [
     devtools(),
     // this is the plugin that enables path aliases

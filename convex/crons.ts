@@ -9,4 +9,10 @@ crons.weekly(
   internal.fetchBlizzard.queryAll
 )
 
+crons.hourly(
+  "Monitor Blizzard rq parameter health",
+  { minuteUTC: 30 },
+  internal.monitor.checkRq
+)
+
 export default crons;

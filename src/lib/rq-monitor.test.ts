@@ -1,0 +1,147 @@
+import { describe, expect, it } from 'vitest'
+import fixture from '../../example-blizz-api-res.json'
+import {
+  evaluateRqHealth,
+  formatRqHealthReport,
+  isValidRatesPayload,
+  ratesFingerprint,
+} from './rq-monitor'
+import type { RatesPayload } from './rq-monitor'
+
+const baseline = fixture as RatesPayload
+
+function cloneWithShiftedRates(payload: RatesPayload): RatesPayload {
+  return {
+    ...payload,
+    rates: payload.rates.map((entry) => ({
+      ...entry,
+      cells: {
+        ...entry.cells,
+        pickrate: entry.cells.pickrate + 1.4,
+        winrate: entry.cells.winrate - 0.6,
+      },
+    })),
+  }
+}
+
+describe('isValidRatesPayload', () => {
+  it('accepts the checked-in rq=2 sample response', () => {
+    expect(isValidRatesPayload(baseline)).toBe(true)
+  })
+
+  it('rejects payloads without a rates array (the crash-on-mount shape)', () => {
+    expect(isValidRatesPayload({ selected: { rq: '1' } })).toBe(false)
+    expect(isValidRatesPayload(null)).toBe(false)
+    expect(isValidRatesPayload('<!doctype html>')).toBe(false)
+    expect(isValidRatesPayload({ rates: [] })).toBe(false)
+  })
+
+  it('rejects rates entries missing numeric pickrate/winrate', () => {
+    const missingWinrate = {
+      rates: [{ id: 'ana', cells: { name: 'Ana', pickrate: 22.3 } }],
+    }
+    expect(isValidRatesPayload(missingWinrate)).toBe(false)
+  })
+})
+
+describe('ratesFingerprint', () => {
+  it('is order-independent', () => {
+    const reversed = { ...baseline, rates: [...baseline.rates].reverse() }
+    expect(ratesFingerprint(reversed)).toBe(ratesFingerprint(baseline))
+  })
+
+  it('changes when any rate changes', () => {
+    expect(ratesFingerprint(cloneWithShiftedRates(baseline))).not.toBe(
+      ratesFingerprint(baseline),
+    )
+  })
+})
+
+describe('evaluateRqHealth', () => {
+  it('reports healthy when every parameter variation changes the data', () => {
+    const report = evaluateRqHealth(baseline, [
+      {
+        parameter: 'map',
+        label: 'all-maps vs rialto',
+        payload: cloneWithShiftedRates(baseline),
+      },
+      {
+        parameter: 'tier',
+        label: 'All vs Grandmaster',
+        payload: cloneWithShiftedRates(cloneWithShiftedRates(baseline)),
+      },
+    ])
+    expect(report.healthy).toBe(true)
+    expect(report.baselineInvalid).toBe(false)
+    expect(report.checks.every((check) => check.result === 'changed')).toBe(true)
+  })
+
+  it('flags a broken rq when rialto returns data identical to all-maps', () => {
+    const report = evaluateRqHealth(baseline, [
+      {
+        parameter: 'map',
+        label: 'all-maps vs rialto',
+        payload: structuredClone(baseline),
+      },
+    ])
+    expect(report.healthy).toBe(false)
+    expect(report.checks[0].result).toBe('stale')
+  })
+
+  it('flags mixed results per parameter', () => {
+    const report = evaluateRqHealth(baseline, [
+      {
+        parameter: 'map',
+        label: 'all-maps vs rialto',
+        payload: structuredClone(baseline),
+      },
+      {
+        parameter: 'region',
+        label: 'Americas vs Asia',
+        payload: cloneWithShiftedRates(baseline),
+      },
+      {
+        parameter: 'input',
+        label: 'PC vs Console',
+        payload: { unexpected: true },
+      },
+    ])
+    expect(report.healthy).toBe(false)
+    expect(report.checks.map((check) => check.result)).toEqual([
+      'stale',
+      'changed',
+      'invalid',
+    ])
+  })
+
+  it('flags an invalid baseline and does not compare against it', () => {
+    const report = evaluateRqHealth(
+      { selected: { rq: '1' } },
+      [
+        {
+          parameter: 'map',
+          label: 'all-maps vs rialto',
+          payload: structuredClone(baseline),
+        },
+      ],
+    )
+    expect(report.healthy).toBe(false)
+    expect(report.baselineInvalid).toBe(true)
+    expect(report.checks[0].result).toBe('invalid')
+  })
+})
+
+describe('formatRqHealthReport', () => {
+  it('summarizes stale parameters in the alert text', () => {
+    const report = evaluateRqHealth(baseline, [
+      {
+        parameter: 'map',
+        label: 'all-maps vs rialto',
+        payload: structuredClone(baseline),
+      },
+    ])
+    const text = formatRqHealthReport(report)
+    expect(text).toContain('map')
+    expect(text).toContain('STALE')
+  })
+})

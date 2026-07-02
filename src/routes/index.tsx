@@ -1,3 +1,4 @@
+import type { HeroData } from '@/lib/hero-data'
 import { HeroTable } from '@/components/hero-table'
 import { HeroQueryFields } from '@/components/hero-query-fields'
 import { HeroRatesScatterplot } from '@/components/hero-rates-scatterplot'
@@ -33,12 +34,13 @@ function App() {
   const [map, setMap] = useState<OWMap>(DEFAULT_MAP)
   const [region, setRegion] = useState<OWRegion>(DEFAULT_REGION)
   const [input, setInput] = useState<OWInput>(DEFAULT_INPUT)
-  const [data, setData] = useState<{ rates: [] } | null>(null)  
+  const [data, setData] = useState<{ rates: Array<HeroData> } | null>(null)
 
   useEffect(() => {
     fetch(`/api/data?tier=${tier}&map=${map}&region=${region}&input=${input}`)
       .then((res) => res.json())
       .then(setData)
+      .catch((error) => console.error('Failed to fetch hero data', error))
   }, [tier, map, region, input])
 
   return (
@@ -63,7 +65,7 @@ function App() {
           />
         </CardContent>
       </Card>
-      {data && (
+      {data && Array.isArray(data.rates) && (
         <>
           <Card>
             <CardHeader>

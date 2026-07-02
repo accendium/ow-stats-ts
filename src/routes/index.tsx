@@ -35,12 +35,28 @@ function App() {
   const [region, setRegion] = useState<OWRegion>(DEFAULT_REGION)
   const [input, setInput] = useState<OWInput>(DEFAULT_INPUT)
   const [data, setData] = useState<{ rates: Array<HeroData> } | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch(`/api/data?tier=${tier}&map=${map}&region=${region}&input=${input}`)
-      .then((res) => res.json())
-      .then(setData)
-      .catch((error) => console.error('Failed to fetch hero data', error))
+      .then(async (res) => {
+        const body = await res.json().catch(() => null)
+        if (!res.ok || !body || !Array.isArray(body.rates)) {
+          setData(null)
+          setLoadError(
+            (body && typeof body.error === 'string' && body.error) ||
+              `Request failed with status ${res.status}`,
+          )
+          return
+        }
+        setData(body)
+        setLoadError(null)
+      })
+      .catch((error) => {
+        console.error('Failed to fetch hero data', error)
+        setData(null)
+        setLoadError(error instanceof Error ? error.message : String(error))
+      })
   }, [tier, map, region, input])
 
   return (
@@ -65,6 +81,14 @@ function App() {
           />
         </CardContent>
       </Card>
+      {loadError && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Could not load hero data</CardTitle>
+            <CardDescription>{loadError}</CardDescription>
+          </CardHeader>
+        </Card>
+      )}
       {data && Array.isArray(data.rates) && (
         <>
           <Card>

@@ -35,7 +35,10 @@ export type RatesPayload = {
 export function isValidRatesPayload(value: unknown): value is RatesPayload {
   if (typeof value !== 'object' || value === null) return false
   const rates = (value as { rates?: unknown }).rates
-  if (!Array.isArray(rates) || rates.length === 0) return false
+  // An empty rates array is unusual but renderable — reject only payloads
+  // the UI cannot use at all. The monitor cron still catches empty/stale
+  // responses via fingerprint comparison.
+  if (!Array.isArray(rates)) return false
   return rates.every((entry) => {
     if (typeof entry !== 'object' || entry === null) return false
     const { id, cells } = entry as { id?: unknown; cells?: unknown }
@@ -59,6 +62,33 @@ export function ratesFingerprint(payload: RatesPayload): string {
     .map((entry) => `${entry.id}=${entry.cells.pickrate}/${entry.cells.winrate}`)
     .sort()
     .join('|')
+}
+
+/**
+ * Short human-readable description of an arbitrary payload, for logs and
+ * alerts when validation rejects it. Never includes payload contents
+ * beyond structure.
+ */
+export function describePayload(value: unknown): string {
+  if (typeof value !== 'object' || value === null) return `a ${typeof value}`
+  const keys = Object.keys(value)
+  const rates = (value as { rates?: unknown }).rates
+  if (rates === undefined) {
+    return `an object without a rates key (keys: ${keys.join(', ') || 'none'})`
+  }
+  if (!Array.isArray(rates)) return `an object whose rates is a ${typeof rates}`
+  const firstInvalid = rates.findIndex(
+    (entry) =>
+      typeof entry !== 'object' ||
+      entry === null ||
+      typeof (entry as { id?: unknown }).id !== 'string' ||
+      typeof (entry as { cells?: { pickrate?: unknown } }).cells?.pickrate !==
+        'number' ||
+      typeof (entry as { cells?: { winrate?: unknown } }).cells?.winrate !==
+        'number',
+  )
+  if (firstInvalid === -1) return `a valid payload with ${rates.length} rates`
+  return `a rates array of ${rates.length} entries where entry ${firstInvalid} is missing a string id or numeric cells.pickrate/cells.winrate`
 }
 
 export type ParameterVariation = {

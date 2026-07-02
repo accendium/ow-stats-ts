@@ -2,8 +2,12 @@
  * Server-side error reporting into the Discord alert channel. Errors are
  * summarized into a stable dedupe key so a crash loop produces one alert
  * per window instead of one per request.
+ *
+ * The bot module (Chat SDK + Discord adapter) is imported lazily and every
+ * failure is swallowed: reporting is best-effort and must never take down
+ * the route that called it — /api/data has to keep serving data even if
+ * the Discord dependency chain is missing or broken.
  */
-import { postDiscordAlert } from '@/lib/bot.server'
 
 export type ErrorReport = {
   /** Where the error surfaced, e.g. "api/data" or "client:render" */
@@ -29,7 +33,16 @@ export async function reportError(report: ErrorReport): Promise<void> {
   ]
   if (report.url) lines.push(`URL: ${truncate(report.url)}`)
   if (report.stack) lines.push('```\n' + truncate(report.stack) + '\n```')
-  await postDiscordAlert(key, lines.join('\n'))
+
+  try {
+    const { postDiscordAlert } = await import('@/lib/bot.server')
+    await postDiscordAlert(key, lines.join('\n'))
+  } catch (error) {
+    console.error(
+      `[observability] alert delivery unavailable, error was:\n${lines.join('\n')}`,
+      error,
+    )
+  }
 }
 
 export function toErrorReport(source: string, error: unknown): ErrorReport {

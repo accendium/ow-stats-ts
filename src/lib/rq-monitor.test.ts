@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import fixture from '../../example-blizz-api-res.json'
 import {
+  describePayload,
   evaluateRqHealth,
   formatRqHealthReport,
   isValidRatesPayload,
@@ -33,7 +34,10 @@ describe('isValidRatesPayload', () => {
     expect(isValidRatesPayload({ selected: { rq: '1' } })).toBe(false)
     expect(isValidRatesPayload(null)).toBe(false)
     expect(isValidRatesPayload('<!doctype html>')).toBe(false)
-    expect(isValidRatesPayload({ rates: [] })).toBe(false)
+  })
+
+  it('accepts an empty rates array — unusual but renderable', () => {
+    expect(isValidRatesPayload({ rates: [] })).toBe(true)
   })
 
   it('rejects rates entries missing numeric pickrate/winrate', () => {
@@ -128,6 +132,21 @@ describe('evaluateRqHealth', () => {
     expect(report.healthy).toBe(false)
     expect(report.baselineInvalid).toBe(true)
     expect(report.checks[0].result).toBe('invalid')
+  })
+})
+
+describe('describePayload', () => {
+  it('names the missing rates key and lists what was there instead', () => {
+    const description = describePayload({ selected: { rq: '1' } })
+    expect(description).toContain('without a rates key')
+    expect(description).toContain('selected')
+  })
+
+  it('points at the first invalid entry', () => {
+    const description = describePayload({
+      rates: [baseline.rates[0], { id: 'broken', cells: { pickrate: 1 } }],
+    })
+    expect(description).toContain('entry 1')
   })
 })
 

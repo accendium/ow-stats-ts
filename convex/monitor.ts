@@ -39,9 +39,10 @@ async function fetchRates(
   params: { input: string; map: string; region: string; tier: string },
   rq: string,
 ): Promise<unknown> {
+  const origin = process.env.BLIZZARD_API_ORIGIN || 'https://overwatch.blizzard.com'
   try {
     const res = await fetch(
-      `https://overwatch.blizzard.com/en-us/rates/data/?input=${params.input}&map=${params.map}&region=${params.region}&role=All&rq=${rq}&tier=${params.tier}`,
+      `${origin}/en-us/rates/data/?input=${params.input}&map=${params.map}&region=${params.region}&role=All&rq=${rq}&tier=${params.tier}`,
     )
     if (!res.ok) return { httpError: `${res.status} ${res.statusText}` }
     return await res.json()

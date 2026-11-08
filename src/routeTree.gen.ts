@@ -10,8 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiDataRouteImport } from './routes/api/data'
 import { Route as ApiClientErrorRouteImport } from './routes/api/client-error'
+import { Route as ApiDataRouteImport } from './routes/api/data'
 import { Route as ApiWebhooksDiscordRouteImport } from './routes/api/webhooks/discord'
 
 const IndexRoute = IndexRouteImport.update({
@@ -19,14 +19,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiDataRoute = ApiDataRouteImport.update({
-  id: '/api/data',
-  path: '/api/data',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiClientErrorRoute = ApiClientErrorRouteImport.update({
   id: '/api/client-error',
   path: '/api/client-error',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDataRoute = ApiDataRouteImport.update({
+  id: '/api/data',
+  path: '/api/data',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebhooksDiscordRoute = ApiWebhooksDiscordRouteImport.update({
@@ -83,18 +83,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/data': {
-      id: '/api/data'
-      path: '/api/data'
-      fullPath: '/api/data'
-      preLoaderRoute: typeof ApiDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/client-error': {
       id: '/api/client-error'
       path: '/api/client-error'
       fullPath: '/api/client-error'
       preLoaderRoute: typeof ApiClientErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/data': {
+      id: '/api/data'
+      path: '/api/data'
+      fullPath: '/api/data'
+      preLoaderRoute: typeof ApiDataRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhooks/discord': {

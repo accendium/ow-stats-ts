@@ -1,6 +1,7 @@
 import { internalAction } from './_generated/server'
 import { internal } from './_generated/api'
 import { TIERS, MAPS, INPUTS, REGIONS, QUICKPLAY_MAPS } from '@/lib/overwatch-constants'
+import { normalizeRatesPayload } from '@/lib/rq-monitor'
 import { v } from "convex/values"
 
 export const queryAll = internalAction({
@@ -36,13 +37,16 @@ export const queryForTier = internalAction({
 
           if (res.ok) {
             const data = await res.json()
+            // Unwrap the 2026-07 envelope so snapshots keep one shape
+            // regardless of upstream churn; store raw when unrecognized.
+            const payload = normalizeRatesPayload(data) ?? data
             await ctx.runMutation(internal.blizzardSnapshots.createSnapshot, {
               map: map,
               tier: tier,
               input: input,
               region: region,
               timestamp: Date.now(),
-              payload: data,
+              payload: payload,
             })
           } else {
             console.error(`Failed to fetch from Blizzard API: '${map}' for tier ${tier} in ${region} with input ${input}`, res.statusText)
@@ -72,13 +76,14 @@ export const queryQuickplay = internalAction({
           )
           if (res.ok) {
             const data = await res.json()
+            const payload = normalizeRatesPayload(data) ?? data
             await ctx.runMutation(internal.blizzardSnapshots.createSnapshot, {
               map: map,
               tier: 'Quickplay',
               input: input,
               region: region,
               timestamp: Date.now(),
-              payload: data,
+              payload: payload,
             })
           } else {
             console.error(`Failed to fetch from Blizzard API: '${map}' for Quickplay in ${region} with input ${input}`, res.statusText)

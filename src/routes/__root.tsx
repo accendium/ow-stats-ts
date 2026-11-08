@@ -4,6 +4,10 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import appCss from '../styles.css?url'
+import {
+  ClientErrorListener,
+  RouteErrorFallback,
+} from '@/components/error-reporting'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -30,6 +34,7 @@ export const Route = createRootRouteWithContext<{
   }),
 
   component: RootComponent,
+  errorComponent: RouteErrorFallback,
 })
 
 function RootComponent() {
@@ -47,6 +52,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <ClientErrorListener />
         {children}
         <TanStackDevtools
           config={{

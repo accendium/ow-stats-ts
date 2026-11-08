@@ -1,0 +1,55 @@
+name: Probe Blizzard rates API shape
+
+# Diagnostic probe: prints the live response shape of the Blizzard rates
+# endpoint for each rq value so payload changes can be inspected from CI
+# logs (the API is not reachable from every development environment).
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl rates API variants
+        run: |
+          for rq in 0 1 2; do
+            for map in all-maps rialto; do
+              url="https://overwatch.blizzard.com/en-us/rates/data/?input=PC&map=$map&region=Americas&role=All&rq=$rq&tier=All"
+              echo "::group::rq=$rq map=$map"
+              code=$(curl -sS -o /tmp/res.json -w "%{http_code}" \
+                -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" \
+                -H "Accept: application/json" \
+                "$url")
+              echo "HTTP $code"
+              echo "--- first 3000 bytes ---"
+              head -c 3000 /tmp/res.json || true
+              echo
+              echo "--- structure summary ---"
+              python3 - <<'EOF' || true
+          import json
+          def describe(v, depth=0, max_depth=3):
+              pad = '  ' * depth
+              if depth > max_depth:
+                  return pad + '...'
+              if isinstance(v, dict):
+                  lines = [pad + '{']
+                  for k, val in list(v.items())[:12]:
+                      lines.append(f"{pad}  {k}: {type(val).__name__}")
+                      if isinstance(val, (dict, list)):
+                          lines.append(describe(val, depth + 2, max_depth))
+                  return '\n'.join(lines) + '\n' + pad + '}'
+              if isinstance(v, list):
+                  head = f"{pad}list[{len(v)}]"
+                  return head + ('\n' + describe(v[0], depth + 1, max_depth) if v else '')
+              return pad + type(v).__name__
+          try:
+              with open('/tmp/res.json') as f:
+                  data = json.load(f)
+              print(describe(data))
+          except Exception as e:
+              print(f'not JSON: {e}')
+          EOF
+              echo "::endgroup::"
+              sleep 1
+            done
+          done

@@ -1,48 +1,20 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-const heroRateValidator = v.object({
-  id: v.string(),
-  cells: v.object({
-    name: v.string(),
-    pickrate: v.number(),
-    winrate: v.number(),
-  }),
-  hero: v.object({
-    color: v.string(),
-    name: v.string(),
-    portrait: v.string(),
-    role: v.string(),
-    roleIcon: v.string(),
-  }),
-});
-
-const extremaBucketValidator = v.object({
-  maxwr: v.number(),
-  minwr: v.number(),
-  maxpr: v.number(),
-  minpr: v.number(),
-});
-
-const blizzardRatesPayloadValidator = v.object({
-  rates: v.array(heroRateValidator),
-  extrema: v.object({
-    all: extremaBucketValidator,
-    tank: extremaBucketValidator,
-    damage: extremaBucketValidator,
-    support: extremaBucketValidator,
-  }),
-  selected: v.object({
-    input: v.string(),
-    map: v.string(),
-    region: v.string(),
-    role: v.string(),
-    rq: v.string(),
-    tier: v.string(),
-  }),
-});
+// Snapshots cache raw Blizzard responses. The upstream shape churns
+// (2026-07 added banrate, subrole, and a new envelope) and Convex object
+// validators reject unknown fields, so a strict validator here makes the
+// weekly ingestion cron fail on every upstream addition. Payloads are
+// normalized before storage (see fetchBlizzard.ts) and validated at read
+// time with normalizeRatesPayload in src/lib/rq-monitor.ts.
+const blizzardRatesPayloadValidator = v.any();
 
 export default defineSchema({
+  monitorStatus: defineTable({
+    checkedAt: v.number(),
+    healthy: v.boolean(),
+    summary: v.string(),
+  }),
   blizzardSnapshots: defineTable({
     tier: v.string(),
     map: v.string(),
